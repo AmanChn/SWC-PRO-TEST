@@ -49,6 +49,12 @@ class disjointSet{
     }
 };
 
+vector<vector<int>> dir = { {-1,0}, {1,0}, {0,1}, {0,-1} };
+
+bool checkBoundary(int r, int c, int n, int m){
+    return r>=0 && c>=0 && r<n && c<m;
+}
+
 void print_graph(vector<int> adj[], int n){
     for( int i=0;i<n;i++ ){
         for( auto node : adj[i] ){
@@ -94,6 +100,39 @@ void BFS(vector<int> adj[], vector<int> &vis_bfs, vector<int> &bfsstore, int n, 
             }
         }
     }
+}
+
+void multiSourceBFS(vector<vector<int>> &grid){
+    vector<vector<int>> vis (grid.size(), vector<int>(grid[0].size(),0));
+
+    queue<pair<int,int>> q;
+    
+    for( int i=0; i<grid.size(); i++ ){
+        for( int j=0; j<grid[i].size(); j++ ){
+            if( grid[i][j] == 1 ){
+                q.push({i,j});
+                vis[i][j] = 1;
+            }
+        }
+    }
+    
+    while( !q.empty() ){
+        int r = q.front().first;
+        int c = q.front().second;
+        q.pop();
+
+        for( int i=0; i<4; i++ ){
+            int nr = r + dir[i][0];
+            int nc = c + dir[i][1];
+
+            //condition and calc here
+            if(  ){
+                q.push({nr,nc});
+                vis[nr][nc] = 1;
+            }
+        }
+    }
+
 }
 
 void print_arr(vector<int> &arr){
@@ -181,10 +220,10 @@ int main(){
 
     graph = {
             {1, 3, 2}, 
-        {4, 3, -1},
-        {2, 4, 1}, 
-        {1, 2, 1},
-        {0, 1, 5} 
+            {4, 3, -1},
+            {2, 4, 1}, 
+            {1, 2, 1},
+            {0, 1, 5} 
     };
 
     vector<int> adj[n];
@@ -223,8 +262,8 @@ int main(){
 
     // print_arr(dis);
 
-    int mstsum = kruskal(adjwt,n);
-    cout<<mstsum;
+    // int mstsum = kruskal(adjwt,n);
+    // cout<<mstsum;
     
     return 0;
 }

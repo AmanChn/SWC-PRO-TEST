@@ -143,6 +143,43 @@ void print_arr(vector<int> &arr){
     cout<<endl;
 }
 
+vector<int> kahnsAlgoTopo(vector<int> adj[], int v){
+    vector<int> indegree(v,0);
+
+    for( int i=0; i<v; i++ ){
+        for( auto i : adj[i] ){
+            indegree[i]++;
+        }
+    }
+
+    queue<int> q;
+
+    for( int i=0; i<v; i++ ){
+        if( indegree[i] == 0 ){
+            q.push(i);
+        }
+    }
+
+    vector<int> topo;
+
+    while( !q.empty() ){
+        int node = q.front();
+        q.pop();
+
+        topo.push_back(node);
+
+        for( auto nbr : adj[node] ){
+            indegree[nbr]--;
+            if( indegree[nbr] == 0 ){
+                q.push(nbr);
+            }
+        }
+    }
+
+    return topo;
+}
+
+
 vector<int> dijkstra(vector<pair<int,int>> adj[], int V, int S){
     vector<int> dist(V, INT_MAX);
 
@@ -188,6 +225,29 @@ vector<int> bellmanFord(vector<pair<int,int>> adjwt[],int V, int S){
 
     return dist;
 }
+
+vector<vector<int>> floydwarshall(vector<vector<int>> &edges, int v){
+    vector<vector<int>> dist(v, vector<int>(v,INT_MAX));
+
+    for( int i=0; i<v; i++ ){
+        dist[i][i] = 0;
+    }
+
+    for( int via=0; via<v; via++ ){
+
+        for( int i=0; i<v; i++ ){
+            for( int j=0; j<v; j++ ){
+                if( dist[i][via] == INT_MAX && dist[via][j] == INT_MAX) continue;
+
+                dist[i][j] = min(dist[i][j], dist[i][via] + dist[via][j]);
+            }
+        }
+
+    }
+
+    return dist;
+}
+
 
 int prims(vector<pair<int,int>> adj[],int v){
     priority_queue<pair<int,int>,vector<pair<int,int>>, greater<pair<int,int>>> pq;

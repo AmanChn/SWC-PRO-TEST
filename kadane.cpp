@@ -1,6 +1,8 @@
 #include<bits/stdc++.h>
 using namespace std;
 
+// void prefixSum(vector<int> )
+
 int kadane(vector<int> &arr){
     //maximum subarray sum
     int ans = INT_MIN;
@@ -11,9 +13,7 @@ int kadane(vector<int> &arr){
 
         ans = max(ans,sum);
 
-        if( sum < 0 ){
-            sum = 0;
-        }
+        if( sum < 0 ) sum = 0;
     }
 
     return ans;

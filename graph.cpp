@@ -103,8 +103,8 @@ void BFS(vector<int> adj[], vector<int> &vis_bfs, vector<int> &bfsstore, int n, 
 }
 
 void multiSourceBFS(vector<vector<int>> &grid){
-    vector<vector<int>> vis (grid.size(), vector<int>(grid[0].size(),0));
-
+    int n = grid.size(), m = grid[0].size();
+    vector<vector<int>> vis (n, vector<int>(m,0));
     queue<pair<int,int>> q;
     
     for( int i=0; i<grid.size(); i++ ){
@@ -126,7 +126,8 @@ void multiSourceBFS(vector<vector<int>> &grid){
             int nc = c + dir[i][1];
 
             //condition and calc here
-            if(  ){
+            if( checkBoundary(nr,nc,n,m) ){
+                // any other calc
                 q.push({nr,nc});
                 vis[nr][nc] = 1;
             }
@@ -188,6 +189,35 @@ vector<int> bellmanFord(vector<pair<int,int>> adjwt[],int V, int S){
     return dist;
 }
 
+int prims(vector<pair<int,int>> adj[],int v){
+    priority_queue<pair<int,int>,vector<pair<int,int>>, greater<pair<int,int>>> pq;
+    vector<bool> vis(v,false);
+    int mstsum = 0;
+    pq.push({0,0});
+
+    while( !pq.empty() ){
+        int w = pq.top().first;
+        int node = pq.top().second;
+
+        if( vis[node] ) continue;
+
+        mstsum += w;
+        vis[node] = 1;
+
+        for( auto nd : adj[node] ){
+            int nbr = nd.first;
+            int d = nd.second;
+
+            if( !vis[nbr] ){
+                pq.push({d,nbr});
+            }
+        }
+
+    }
+    
+    return mstsum;
+}
+
 int kruskal(vector<pair<int,int>> adjwt[], int V){
     vector<vector<int>> edges;
 
@@ -215,7 +245,7 @@ int kruskal(vector<pair<int,int>> adjwt[], int V){
 }
 
 int main(){
-    int n = 5, e=7; 
+    int n=5, e=7; 
     vector<vector<int>> graph(5, vector<int>(3,0));
 
     graph = {

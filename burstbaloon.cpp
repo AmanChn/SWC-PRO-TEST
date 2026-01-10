@@ -67,7 +67,7 @@ int solve(int i, int j){
 
     int res = 0;
     for(int k = i+1; k < j; k++){
-        res = max(res, solve(i, k) + solve(k, j) + a[i] * a[k] * a[j] );
+        dp[i][j] = res = max(res, solve(i, k) + solve(k, j) + a[i] * a[k] * a[j] );
     }
 
     return dp[i][j] = res;

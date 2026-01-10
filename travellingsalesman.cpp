@@ -12,7 +12,7 @@ int totalCost(vector<vector<int>> &cost, int mask, int pos, vector<vector<int>> 
 
     for( int i=0; i<n ; i++ ){
         if( (mask & (1<<i)) == 0 ){
-            ans = min(ans,cost[pos][i] + totalCost(cost,mask|(i<<i),i,dp));
+            ans = min(ans,cost[pos][i] + totalCost(cost,mask|(1<<i),i,dp));
         }
     }
 
@@ -27,7 +27,7 @@ int travellingSalesman(){
 
     int n = cost.size();
 
-    vector<vector<int>> dp(n+1, vector<int>(n+1,-1));
+    vector<vector<int>> dp((1<<n), vector<int>(n,-1));
 
     int mask = 1, pos = 0;
 

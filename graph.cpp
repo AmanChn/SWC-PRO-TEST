@@ -147,8 +147,8 @@ vector<int> kahnsAlgoTopo(vector<int> adj[], int v){
     vector<int> indegree(v,0);
 
     for( int i=0; i<v; i++ ){
-        for( auto i : adj[i] ){
-            indegree[i]++;
+        for( auto j : adj[i] ){
+            indegree[j]++;
         }
     }
 
@@ -178,7 +178,6 @@ vector<int> kahnsAlgoTopo(vector<int> adj[], int v){
 
     return topo;
 }
-
 
 vector<int> dijkstra(vector<pair<int,int>> adj[], int V, int S){
     vector<int> dist(V, INT_MAX);
@@ -217,6 +216,9 @@ vector<int> bellmanFord(vector<pair<int,int>> adjwt[],int V, int S){
                 int wt = edge.second;
 
                 if( dist[u] + wt < dist[v] ){
+                    if(i == V - 1) // If this is the Vth relaxation, then there is a negative cycle
+                        return {-1};
+
                     dist[v] = dist[u] + wt;
                 }
             }
@@ -237,7 +239,7 @@ vector<vector<int>> floydwarshall(vector<vector<int>> &edges, int v){
 
         for( int i=0; i<v; i++ ){
             for( int j=0; j<v; j++ ){
-                if( dist[i][via] == INT_MAX && dist[via][j] == INT_MAX) continue;
+                if( dist[i][via] == INT_MAX || dist[via][j] == INT_MAX) continue;
 
                 dist[i][j] = min(dist[i][j], dist[i][via] + dist[via][j]);
             }
@@ -247,7 +249,6 @@ vector<vector<int>> floydwarshall(vector<vector<int>> &edges, int v){
 
     return dist;
 }
-
 
 int prims(vector<pair<int,int>> adj[],int v){
     priority_queue<pair<int,int>,vector<pair<int,int>>, greater<pair<int,int>>> pq;

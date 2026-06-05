@@ -58,23 +58,29 @@ int manhattan_dist(nodes a, nodes b){
     return abs(a.x - b.x) + abs(a.y - b.y);
 }
 
-int totalCost(vector<vector<int>> &dist, int mask, int pos, vector<vector<int>> &dp){
+int totalCost(vector<vector<int>> &dist, int mask, int pos, vector<vector<int>> &dp, int n){
     int m = dist.size();
 
-    // int allCustomerVisited = ((1<<m)-1)>>1; // check only for customers and office 
-    int allCustomerVisited = (1<<(m-1)) - 1; // check only for customers and office (use any)
+    // Target: All N customers are visited. (e.g., if N=3, target is (1<<3)-1 = 7, binary 111)
+    int allCustomerVisited = (1 << n) - 1; 
 
-    if( mask == allCustomerVisited) return dist[pos][m-1];
+    // Base case: if all customers are visited, return distance from current position to Home (m-1)
+    if( mask == allCustomerVisited ) return dist[pos][m-1];
 
+    // Memoization check
     if( dp[mask][pos] != -1 ) return dp[mask][pos];
 
     int ans = INT_MAX;
 
-    // we will not visit home and office while delivering the fridge
-    // and we will only visit home at last. thats why i is 1 to m-1
-    for( int i=1; i<m-1; i++ ){
-        if( (mask & (1<<i)) == 0 ){
-            ans = min(ans, dist[pos][i] + totalCost(dist,(mask | (1<<i)),i,dp));
+    // Loop through customers only (indices 1 to n)
+    for( int i = 1; i <= n; i++ ){
+        int customer_bit = i - 1; // Map customer index 1..n to bit index 0..(n-1)
+        
+        if( (mask & (1 << customer_bit)) == 0 ){
+            int sub_problem = totalCost(dist, (mask | (1 << customer_bit)), i, dp, n);
+            if (sub_problem != INT_MAX) { // Prevent integer overflow
+                ans = min(ans, dist[pos][i] + sub_problem);
+            }
         }
     }
 
@@ -82,53 +88,52 @@ int totalCost(vector<vector<int>> &dist, int mask, int pos, vector<vector<int>> 
 }
 
 int main(){
+    // Fast I/O
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
     int test_cases;
-    cin>>test_cases;
+    if (!(cin >> test_cases)) return 0;
 
     while( test_cases-- ){
         int n;
-        cin>>n;
+        cin >> n;
 
-        nodes office,home;
-        cin>>office.x>>office.y>>home.x>>home.y;
+        nodes office, home;
+        cin >> office.x >> office.y >> home.x >> home.y;
 
         vector<nodes> nd;
-
-        nd.push_back(office);
-        for( int i=0; i<n; i++ ){
+        nd.push_back(office); // index 0
+        for( int i = 0; i < n; i++ ){
             nodes customer;
-            cin>>customer.x>>customer.y;
-            nd.push_back(customer);
+            cin >> customer.x >> customer.y;
+            nd.push_back(customer); // indices 1 to n
         }
+        nd.push_back(home); // index n+1
 
-        nd.push_back(home);
         int m = nd.size();
-        vector<vector<int>> dist(m, vector<int>(m,0));
+        vector<vector<int>> dist(m, vector<int>(m, 0));
 
-        for( int i=0; i<nd.size(); i++ ){
-            for( int j=0; j<nd.size(); j++ ){
+        for( int i = 0; i < m; i++ ){
+            for( int j = 0; j < m; j++ ){
                 if( i == j ) continue;
                 dist[i][j] = manhattan_dist(nd[i], nd[j]);
             }
         }
 
-        //TSP with bitmask DP
-        int mask = 1; // mark office as visited.
-        int pos = 0;
-        vector<vector<int>> dp((1<<(m-1)), vector<int>(m,-1));
-        // we will not visit home while delivering the fridge
-        // and we will only visit home at last. thats why we only need the mask of ofc & n customers
+        // TSP with bitmask DP
+        int mask = 0; // No customers visited yet at the start
+        int pos = 0;  // Starting at the office (index 0)
+        
+        // DP size: 2^n possible customer masks, and m possible positions
+        vector<vector<int>> dp(1 << n, vector<int>(m, -1));
 
-        cout<< totalCost(dist,mask,pos,dp);
-
-        // cout<<endl;
-        // for( auto i : dp ){
-        //     for( auto j : i){
-        //         cout<<j<<" ";
-        //     }
-        //     cout<<endl;
-        // }cout<<endl;
+        // Print result with a newline for handling multiple test cases correctly
+        cout << totalCost(dist, mask, pos, dp, n) << "\n";
     }
-    
     return 0;
 }
+
+/*What changed?mask initialized to 0: We don't track the office in the bitmask anymore. We only care if the N customers are visited.
+customer_bit = i - 1: Maps your array positions 1 to n to bit entries 0 to n-1.
+dp size reduced: Scaled down safely to 1 << n states instead of wasting space with 1 << (m-1).*/

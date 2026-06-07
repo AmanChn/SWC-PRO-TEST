@@ -43,58 +43,64 @@ Example of Output
 4
 */
 
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
 
-int totalCost(vector<vector<int>> &cost, int mask, int pos, vector<vector<int>> &dp){
-    int n = cost.size();
+int totalCost(vector<vector<int>> &cost, int mask, int pos, int n, vector<vector<int>> &dp) {
+    // If all offices are visited, return the cost to go back to the starting office (office 0)
+    if (mask == (1 << n) - 1) {
+        if (cost[pos][0] == 0) return 1e9; // Return a large value if return path is impossible
+        return cost[pos][0];
+    }
 
-    if( mask == (1<<n) -1 ) return cost[pos][0];
+    if (dp[mask][pos] != -1) return dp[mask][pos];
 
-    if( dp[mask][pos] != -1 ) return dp[mask][pos];
+    int ans = 1e9; // Use a sufficiently large value to represent infinity
 
-    int ans = INT_MAX;
-
-    for( int i=0; i<n; i++ ){
-        if( (mask & (1<<i)) == 0 ){
-            ans = min(ans, cost[pos][i] + totalCost(cost,mask | (1<<i), i,dp));
+    for (int i = 0; i < n; i++) {
+        // If the office is not visited and there is a valid path to it
+        if ((mask & (1 << i)) == 0 && cost[pos][i] != 0) {
+            ans = min(ans, cost[pos][i] + totalCost(cost, mask | (1 << i), i, n, dp));
         }
     }
 
     return dp[mask][pos] = ans;
 }
 
-int main(){
-    int test_cases;
-    cin>>test_cases;
+void solve() {
+    int n;
+    if (!(cin >> n)) return;
 
-    while( test_cases-- ){
-        int n;
-        cin>>n;
-
-        vector<vector<int>> cost(n, vector<int>(n,0));
-
-        for( int i=0; i<n; i++ ){
-            for( int j=0; j<n; j++ ){
-                cin>>cost[i][j];
-            }
+    vector<vector<int>> cost(n, vector<int>(n, 0));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            cin >> cost[i][j];
         }
-
-        //TSP with bitmask DP
-        int mask = 1, pos = 0;
-
-        vector<vector<int>> dp((1<<n), vector<int>(n,-1));
-
-        cout<<totalCost(cost,mask,pos,dp);
-
-        cout<<endl;
-        for( auto i : dp ){
-            for( auto j : i){
-                cout<<j<<" ";
-            }
-            cout<<endl;
-        }cout<<endl;
     }
 
+    // DP table initialized with -1. Max states: 2^n * n
+    vector<vector<int>> dp(1 << n, vector<int>(n, -1));
+    
+    // Start at office 0 (No. 1 office), mask starts as 1 (only office 0 visited)
+    int min_expense = totalCost(cost, 1, 0, n, dp);
+
+    // If min_expense is still our "infinity" value, it means no valid route was found
+    if (min_expense >= 1e9) {
+        cout << 0 << "\n";
+    } else {
+        cout << min_expense << "\n";
+    }
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    
+    int test_cases;
+    if (cin >> test_cases) {
+        while (test_cases--) {
+            solve();
+        }
+    }
     return 0;
 }

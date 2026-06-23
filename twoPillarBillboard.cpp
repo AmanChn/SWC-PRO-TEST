@@ -17,66 +17,71 @@ Output :
 #include <bits/stdc++.h>
 using namespace std;
 
-void solve() {
-    int n;
-    if (!(cin >> n)) return;
-
-    vector<int> rods(n);
-    int total_sum = 0;
-    for (int i = 0; i < n; ++i) {
-        cin >> rods[i];
-        total_sum += rods[i];
-    }
-
-    // dp[i] stores the maximum height of the taller pillar 
-    // such that (taller - shorter) == i.
-    // We initialize with -1 to represent unreachable states.
-    vector<int> dp(total_sum + 1, -1);
-    
-    // Base case: Two pillars of height 0 have a difference of 0.
-    dp[0] = 0;
-
-    for (int x : rods) {
-        // We create a copy of the current DP state to avoid using 
-        // values updated in this same iteration.
-        vector<int> next_dp = dp;
-
-        for (int d = 0; d <= total_sum; ++d) {
-            // If the current difference 'd' is unreachable, skip it
-            if (dp[d] == -1) continue;
-
-            int h1 = dp[d];      // Height of the taller pillar
-            int h2 = h1 - d;     // Height of the shorter pillar
-
-            // Option 1: Add rod 'x' to the taller pillar
-            // New diff becomes (d + x)
-            if (d + x <= total_sum) {
-                next_dp[d + x] = max(next_dp[d + x], h1 + x);
-            }
-
-            // Option 2: Add rod 'x' to the shorter pillar
-            // The new difference is the absolute difference between the pillars
-            int new_diff = abs(d - x);
-            // The new max height depends on which pillar becomes taller
-            int new_taller_height = max(h1, h2 + x);
-            
-            next_dp[new_diff] = max(next_dp[new_diff], new_taller_height);
+int solve(vector<int>& rods, int idx, int sum1, int sum2){
+        if( idx == rods.size() ){
+            if( sum1 == sum2 ) return sum1;
+            return 0;
         }
-        // Update the main dp array for the next rod
-        dp = next_dp;
-    }
 
-    // dp[0] holds the max height where diff is 0. 
-    // If it's 0 (and we had rods), it means no non-zero solution was found.
-    // However, the problem asks to print 0 if no combination is possible.
-    cout << dp[0] << endl;
+        int op1 = solve(rods,idx+1,sum1,sum2); // skip
+        int op2 = solve(rods,idx+1,sum1+rods[idx],sum2); // add to sum1
+        int op3 = solve(rods,idx+1,sum1,sum2+rods[idx]); // add to sum2
+
+        return max({op1,op2,op3});
+}
+    // Reducing one of the state in above solution , as N * M * M would lead to MLE/TLE  where M = sum(Array)
+
+    // Lets store the difference of s1 and s2 in the state , so the difference would range from -M to M
+
+    // Hence, number of states = N* ( 2 * M) , hence we reduced the time by M
+   
+    // Note: +5000 to make index positive because sum can be negative but index should be positive.
+    static const int offset = 5000;
+    int dp[21][2 * offset + 1];
+
+    // returns the maximum subset sum s1 , such that there exist another mutually exclusive subset s2 with difference in their sums = diff   OR
+    // The maximum total height contributed to the LEFT pillar from rods idx...n-1, assuming the current difference is diff.
+    int solveMem(vector<int> &rods, int idx, int diff){
+        if( idx == rods.size() ){
+            if( diff == 0 ) //meaning this configuration is valid
+                return 0;
+
+            return INT_MIN;
+        }
+
+        if( dp[idx][diff + offset] != -1 ){
+            return dp[idx][diff + offset];
+        }
+
+        int opt1 = solveMem(rods,idx+1,diff); //skip
+
+        // diff = left - right
+        // new diff=(left + rod) - right = diff + rod
+        int opt2 = rods[idx] + solveMem(rods,idx+1,diff+rods[idx]); //add to left
+        
+        // new diff=left - (right + rod) = diff - rod
+        int opt3 = solveMem(rods,idx+1,diff-rods[idx]); // add to right
+        // NO rods[idx] +   Why?
+        // Because the function is counting LEFT height only.
+        // Rod placed on RIGHT shouldn't increase LEFT height.
+
+        return dp[idx][diff + offset] = max({opt1,opt2,opt3});
 }
 
 int main() {
     int t;
     if (cin >> t) {
         while (t--) {
-            solve();
+            // int idx=0, sum1=0, sum2=0;
+            // return solve(rods,idx,sum1,sum2);
+    
+            //diff = height(left pillar) - height(right pillar)
+            int idx=0, diff=0; 
+            memset(dp , -1 , sizeof(dp));
+    
+            int ans = solveMem(rods,idx,diff);
+    
+            return ans<0 ? 0 : ans; 
         }
     }
     return 0;

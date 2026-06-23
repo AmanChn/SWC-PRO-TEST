@@ -38,7 +38,7 @@ using namespace std;
 
 int n;
 vector<vector<int>> grid;
-int dp[20][5][20];   // N is usually <= 15, r:c:idx where bomb used or -1 if not used
+int dp[20][5][21];   // N is usually <= 15, r:c:idx where bomb used or -1 if not used
 
 bool enemyKilled(int row, int bombRow) {
     if (bombRow == -1) return false;

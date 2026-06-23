@@ -33,130 +33,91 @@ x x S x x
     x x S x x -->bomb x x S x x
    Now, we can use the bomb to get out of this situation. After this, we can collect at most 1 coin. So maximum coins=5.
 */
-
-// #include<bits/stdc++.h>
-// using namespace std;
-// int ans =INT_MIN;
-
-// void getMaxCoin(vector<vector<int>> &grid, int isRowSafe, bool bombUsed, int r, int c, int coins){
-//     if( r<0 || c<0 || c>=5 ){
-//         ans = max(ans,coins);
-//         return;
-//     }
-
-//     //if cell is 1 or 0
-//     if( grid[r][c] == 1 || grid[r][c] == 0){
-//         int newcoins = coins;
-//         if (grid[r][c] == 1) {
-//             newcoins++;
-//         }
-//         if( bombUsed ){
-//             isRowSafe--;
-//         }
-
-//         getMaxCoin(grid,isRowSafe,bombUsed,r-1,c-1,newcoins);
-//         getMaxCoin(grid,isRowSafe,bombUsed,r-1,c,newcoins);
-//         getMaxCoin(grid,isRowSafe,bombUsed,r-1,c+1,newcoins);
-//     }
-//     else{ // there is enemy ie grid[r][c] == 2;
-//         if( bombUsed && isRowSafe <=0 ){
-//             ans = max(ans,coins);
-//             return;
-//         }
-//         else if( bombUsed && isRowSafe > 0 ){
-//             isRowSafe--;
-//             getMaxCoin(grid,isRowSafe,bombUsed,r-1,c-1,coins);
-//             getMaxCoin(grid,isRowSafe,bombUsed,r-1,c,coins);
-//             getMaxCoin(grid,isRowSafe,bombUsed,r-1,c+1,coins);
-//         }
-//         else{ // bomb is not used so use it
-//             bombUsed = true;
-//             isRowSafe = 4; // as the current and above 4 rows will be cleared of enemies
-//             getMaxCoin(grid,isRowSafe,bombUsed,r-1,c-1,coins);
-//             getMaxCoin(grid,isRowSafe,bombUsed,r-1,c,coins);
-//             getMaxCoin(grid,isRowSafe,bombUsed,r-1,c+1,coins);
-
-//         }
-//     }
-// }
-
-// int main(){
-//     int n;
-//     cin>>n;
-//     int m = 5;
-
-//     vector<vector<int>> grid(n,vector<int> (m,0));
-
-//     for( int i=0;i<n;i++ ){
-//         for( int j=0; j<m; j++ ){
-//             cin>>grid[i][j];
-//         }
-//     }
-
-//     // int r = grid.size()-1, c = 2;
-//     int r = grid.size()-1;
-//     int isRowSafe = 0;
-
-//     getMaxCoin(grid,isRowSafe,false,r,1,0);
-//     getMaxCoin(grid,isRowSafe,false,r,2,0);
-//     getMaxCoin(grid,isRowSafe,false,r,3,0);
-
-//     cout<<ans;
-// }
-
-
 #include <bits/stdc++.h>
 using namespace std;
 
 int n;
-int grid[105][5];
-int dp[105][5][6];
+vector<vector<int>> grid;
+int dp[20][5][20];   // N is usually <= 15, r:c:idx where bomb used or -1 if not used
 
-int solve(){
-    memset(dp, -1, sizeof(dp));
+bool enemyKilled(int row, int bombRow) {
+    if (bombRow == -1) return false;
+    return row >= bombRow - 4 && row <= bombRow;
+}
 
-    dp[n][2][0] = 0;   // start at middle, no bomb used
+int solve(int row, int col, int bombRow) {
+    if (col < 0 || col >= 5)
+        return -1000000;
 
-    for(int r=n; r>0; r--){
-        for(int c=0; c<5; c++){
-            for(int t=0; t<=5; t++){
-                if(dp[r][c][t] == -1) continue;
+    if (row < 0)
+        return 0;
 
-                for(int mv=-1; mv<=1; mv++){
-                    int nc = c + mv;
-                    if(nc < 0 || nc >= 5) continue;
+    int idx = bombRow + 1; // map -1 -> 0 as idx cannot be -ve
 
-                    int val = dp[r][c][t];
-                    int cell = grid[r-1][nc];
-                    int nt = max(0, t-1);
+    if (dp[row][col][idx] != -1)
+        return dp[row][col][idx];
 
-                    if(cell == 2 && t == 0){
-                        // must use bomb now
-                        nt = 5;
-                    }
-                    else{
-                        if(cell == 1) val++;
-                    }
+    int ans = -1000000;
 
-                    dp[r-1][nc][nt] = max(dp[r-1][nc][nt], val);
+    for (int move = -1; move <= 1; move++) {
+        int nc = col + move;
+
+        if (nc < 0 || nc >= 5)
+            continue;
+
+        int cell = grid[row][nc];
+
+        bool deadEnemy = enemyKilled(row, bombRow);
+
+        // Empty cell
+        if (cell == 0) {
+            ans = max(ans,
+                      solve(row - 1, nc, bombRow));
+        }
+
+        // Coin
+        else if (cell == 1) {
+            ans = max(ans,
+                      1 + solve(row - 1, nc, bombRow));
+        }
+
+        // Enemy
+        else {
+            // Enemy already destroyed by bomb
+            if (deadEnemy) {
+                ans = max(ans,
+                          solve(row - 1, nc, bombRow));
+            }
+            else {
+                // Use bomb now if not used yet
+                if (bombRow == -1) {
+                    ans = max(ans,
+                              solve(row - 1, nc, row));
                 }
             }
         }
     }
 
-    int ans = 0;
-    for(int c=0;c<5;c++)
-        for(int t=0;t<=5;t++)
-            ans = max(ans, dp[0][c][t]);
-
-    return ans;
+    return dp[row][col][idx] = ans;
 }
 
-int main(){
-    cin >> n;
-    for(int i=0;i<n;i++)
-        for(int j=0;j<5;j++)
-            cin >> grid[i][j];
+int main() {
+    int T;
+    cin >> T;
 
-    cout << solve();
+    while (T--) {
+        cin >> n;
+
+        grid.assign(n, vector<int>(5));
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < 5; j++) {
+                cin >> grid[i][j];
+            }
+        }
+
+        memset(dp, -1, sizeof(dp));
+
+        cout << solve(n - 1, 2, -1) << "\n";
+    }
 }

@@ -63,6 +63,9 @@ int main(){
                     auto prob = nd.second;
 
                     // Distribute probability to neighbors
+                    //We use += instead of = because multiple incoming paths can lead to the exact same division during the same 
+                    //10-minute time step.If you use =, you will overwrite the probability calculated from previous paths, which destroys 
+                    //the correct cumulative total.
                     dp[t+1][v] += dp[t][u] * prob;
                 }
             }

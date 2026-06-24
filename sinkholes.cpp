@@ -47,10 +47,17 @@ int main(){
             grid[x][y] = 1;
         }
 
+		// Build prefix sum
+	    // pref[i][j] stores number of sinkholes in rectangle
+	    // (1,1) -> (i,j)
         vector<vector<int>> ps(N+1, vector<int>(M+1,0));
         for(int i=1;i<=N;i++)
             for(int j=1;j<=M;j++)
-                ps[i][j] = grid[i][j] + ps[i-1][j] + ps[i][j-1] - ps[i-1][j-1];
+                pref[i][j] =
+                grid[i-1][j-1]              // current cell
+                + pref[i-1][j]              // top rectangle
+                + pref[i][j-1]              // left rectangle
+                - pref[i-1][j-1];           // overlap counted twice
 
         int lo=1, hi=min(N,M), best=0, bx=1,by=1;
 
@@ -59,6 +66,7 @@ int main(){
             bool found=false;
             int tx=1,ty=1;
 
+			// Check all squares of side = mid
             for(int i=1;i+mid-1<=N && !found;i++){
                 for(int j=1;j+mid-1<=M;j++){
                     int cnt = getSum(ps,i,j,i+mid-1,j+mid-1);

@@ -54,7 +54,7 @@ int main(){
         for(int i=1;i<=N;i++)
             for(int j=1;j<=M;j++)
                 pref[i][j] =
-                grid[i-1][j-1]              // current cell
+                grid[i][j]              	// current cell
                 + pref[i-1][j]              // top rectangle
                 + pref[i][j-1]              // left rectangle
                 - pref[i-1][j-1];           // overlap counted twice

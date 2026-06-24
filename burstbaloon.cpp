@@ -26,23 +26,26 @@ using namespace std;
 
 int maxCoins(vector<int>& nums) {
     int n = nums.size();
-    vector<int> a(n+2, 1);
-
-    for(int i=0;i<n;i++) a[i+1] = nums[i];
-
-    int N = n + 2;
-    vector<vector<int>> dp(N, vector<int>(N, 0));
-
-    for(int len=2; len<N; len++){
-        for(int i=0; i+len<N; i++){
-            int j = i + len;
-            for(int k = i+1; k < j; k++){
-                dp[i][j] = max(dp[i][j],
-                    dp[i][k] + dp[k][j] + a[i]*a[k]*a[j]);
+        vector<int> arr(n+2);
+        arr[0] = 1, arr[n+1] = 1;
+        for(int i=0; i<n; i++){
+            arr[i+1] = nums[i];
+        }
+        // vector<vector<int>> dp(n+2, vector<int>(n+2, -1));
+        // return get(arr, 1, n, dp);
+        vector<vector<int>> dp(n+2, vector<int>(n+2, 0));
+        for(int i=n; i>=1; i--){
+            for(int j=i; j<=n; j++){
+                int maxi = 0;
+                for(int ind=i; ind<=j; ind++){
+                    int cost = arr[i-1]*arr[ind]*arr[j+1] + dp[i][ind-1] + dp[ind+1][j];
+                    maxi = max(maxi, cost);
+                }
+                dp[i][j] = maxi;
             }
         }
-    }
-    return dp[0][N-1];
+
+        return dp[1][n];
 }
 
 int main(){

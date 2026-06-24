@@ -40,7 +40,8 @@ int main(){
         int D, H;
         cin>>D>>H;
 
-        int pace = 2;
+        int pace;
+        cin>>pace;
         vector<pair<int,int>> paces(pace);
 
         for( int i=0; i<pace; i++ ){

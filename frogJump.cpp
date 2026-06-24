@@ -15,23 +15,24 @@ int minJumpCost(vector<vector<int>> &grid, int sr,int sc, int dr, int dc){
     vector<vector<int>> dist(n, vector<int>(m,INT_MAX));
     dist[sr][sc] = 0;
 
-    deque<pair<int,int>> dq;
-    dq.push_back({sr,sc});
+    priority_queue<pair<int,pair<int,int>>, vector<pair<int,pair<int,int>>>, greater<pair<int,pair<int,int>>>> pq;
+    pq.push({0,{sr,sc}});
 
-    while( !dq.empty() ){
-        int r = dq.front().first;
-        int c = dq.front().second;
-        dq.pop_front();
+    while( !pq.empty() ){
+        int cost = pq.top().first;
+        int r = pq.top().second.first;
+        int c = pq.top().second.second;
+        pq.pop();
 
-        int curr_cost = dist[r][c];
-
-        if( r == dr && c == dc) return curr_cost;
+        if( r == dr && c == dc) return cost;
+        
+        if (cost > dist[r][c]) continue;
 
         //move left 0 cost
         for( int nc = c-1; nc>=0 && grid[r][nc] == 1; nc-- ){
             if( dist[r][nc] > dist[r][c] ){
                 dist[r][nc] = dist[r][c];
-                dq.push_front({r,nc});
+                pq.push({dist[r][nc],{r,nc}});
             }
         }
 
@@ -39,16 +40,17 @@ int minJumpCost(vector<vector<int>> &grid, int sr,int sc, int dr, int dc){
         for( int nc = c+1; nc<m && grid[r][nc] == 1; nc++ ){
             if( dist[r][nc] > dist[r][c] ){
                 dist[r][nc] = dist[r][c];
-                dq.push_front({r,nc});
+                pq.push({dist[r][nc],{r,nc}});
             }
         }
 
         //move vertically cost is diff in rows
         for( int nr=0; nr<n; nr++ ){
             if( nr != r && grid[nr][c] == 1){
-                if( dist[nr][c] > dist[r][c] + abs(nr-r) ){
-                    dist[nr][c] = dist[r][c] + abs(nr-r);
-                    dq.push_back({nr,c});
+                int jump_cost = abs(nr - r);
+                if( dist[nr][c] > dist[r][c] + jump_cost ){
+                    dist[nr][c] = dist[r][c] + jump_cost;
+                    pq.push({dist[nr][c],{nr,c}});
                 }
             }
         }

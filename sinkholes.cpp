@@ -53,11 +53,11 @@ int main(){
         vector<vector<int>> ps(N+1, vector<int>(M+1,0));
         for(int i=1;i<=N;i++)
             for(int j=1;j<=M;j++)
-                pref[i][j] =
+                ps[i][j] =
                 grid[i][j]              	// current cell
-                + pref[i-1][j]              // top rectangle
-                + pref[i][j-1]              // left rectangle
-                - pref[i-1][j-1];           // overlap counted twice
+                + ps[i-1][j]              // top rectangle
+                + ps[i][j-1]              // left rectangle
+                - ps[i-1][j-1];           // overlap counted twice
 
         int lo=1, hi=min(N,M), best=0, bx=1,by=1;
 
